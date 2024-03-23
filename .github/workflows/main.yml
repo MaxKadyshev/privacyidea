@@ -25,7 +25,7 @@ jobs:
           context: .
           push: true
           build-args:
-          - PWD: password
-          - EMAIL: maxkadyshev@gmail.com
+          - PWD=password
+          - EMAIL=maxkadyshev@gmail.com
           file: privacyidea
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:ci
