@@ -1,0 +1,16 @@
+FROM ubuntu:24.04
+ARG PWD
+ARG EMAIL
+ENV PWD=${PWD}
+ENV EMAIL=${EMAIL}
+WORKDIR /privacyidea
+COPY --chmod=644 docker/config.py .
+COPY --chmod=744 docker/init.sh .
+ADD https://github.com/privacyidea/privacyidea.git .
+RUN apt update && apt install -y \
+    virtualenv \
+ && rm -rf /var/lib/apt/lists/*
+EXPOSE 5000
+ENTRYPOINT [ "./init.sh" ]
+
+# sudo docker build --build-arg PWD=password --build-arg EMAIL=maxkadyshev@gmail.com -t maxkadyshev/privacyidea:0.0.4 -f docker/privacyidea .
