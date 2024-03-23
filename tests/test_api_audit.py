@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 from contextlib import contextmanager
 from datetime import datetime, timedelta
@@ -27,12 +25,12 @@ class APIAuditTestCase(MyApiTestCase):
         self.assertTrue(rid > 0, rid)
 
         (added, failed) = set_realm(self.realm1a,
-                                    [self.resolvername1])
+                                    [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 
         (added, failed) = set_realm(self.realm2b,
-                                    [self.resolvername1])
+                                    [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 
@@ -227,7 +225,7 @@ class APIAuditTestCase(MyApiTestCase):
         self.assertTrue(rid > 0, rid)
 
         (added, failed) = set_realm("adminrealm",
-                                    [self.resolvername1])
+                                    [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 

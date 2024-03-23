@@ -37,16 +37,7 @@ class TokenBaseTestCase(MyTestCase):
     # add_user, get_user, reset, set_user_identifiers
 
     def test_00_create_user_realm(self):
-        rid = save_resolver({"resolver": self.resolvername1,
-                               "type": "passwdresolver",
-                               "fileName": PWFILE})
-        self.assertTrue(rid > 0, rid)
-
-        (added, failed) = set_realm(self.realm1,
-                                    [self.resolvername1])
-        self.assertTrue(len(failed) == 0)
-        self.assertTrue(len(added) == 1)
-
+        self.setUp_user_realms()
         user = User(login="root",
                     realm=self.realm1,
                     resolver=self.resolvername1)
@@ -403,8 +394,15 @@ class TokenBaseTestCase(MyTestCase):
         token = TokenClass(db_token)
         token.add_tokeninfo("radius.secret", "secret", value_type="password")
         info1 = token.get_tokeninfo()
-        self.assertTrue("radius.secret" in info1, info1)
-        self.assertTrue("radius.secret.type" in info1, info1)
+        self.assertIn("radius.secret", info1, info1)
+        self.assertIn("radius.secret.type", info1, info1)
+        # We get the encrypted value
+        self.assertEqual(65, len(info1.get("radius.secret")), info1)
+        # Now we get the tokenvalues, decrypted
+        info2 = token.get_tokeninfo(decrypted=True)
+        # and we can see the plain text value
+        self.assertEqual("secret", info2.get("radius.secret"), info2)
+        self.assertEqual("password", info2.get("radius.secret.type"), info2)
 
         info = token.get_tokeninfo("radius.secret")
         self.assertEqual(info, "secret", info)
@@ -426,19 +424,19 @@ class TokenBaseTestCase(MyTestCase):
         info = token.get_tokeninfo("radius.secret")
         self.assertEqual(info, "topSecret", info)
 
-        # THe same with set_tokeninfo
+        # The same with set_tokeninfo
         token.set_tokeninfo({"radius.secret": "otherSecret",
                              "radius.secret.type": "password"})
         info1 = token.get_tokeninfo()
-        self.assertTrue("radius.secret" in info1, info1)
-        self.assertTrue("radius.secret.type" in info1, info1)
+        self.assertIn("radius.secret", info1, info1)
+        self.assertIn("radius.secret.type", info1, info1)
         # get_tokeninfo without parameters does not decrypt!
-        self.assertTrue(info1.get("radius.secret") != "otherSecret",
-                        info1.get("radius.secret"))
+        self.assertNotEqual(info1.get("radius.secret"), "otherSecret",
+                            info1)
 
         # get_tokeninfo with parameter does decrypt!
         info = token.get_tokeninfo("radius.secret")
-        self.assertTrue(info == "otherSecret", info)
+        self.assertEqual(info, "otherSecret", info)
 
     def test_12_inc_otp_counter(self):
         db_token = Token.query.filter_by(serial=self.serial1).first()
@@ -741,8 +739,7 @@ class TokenBaseTestCase(MyTestCase):
                              "type": "passwdresolver",
                              "fileName": PWFILE})
         self.assertTrue(rid > 0, rid)
-        (added, failed) = set_realm(realm,
-                                    [resolver])
+        (added, failed) = set_realm(realm, [{'name': resolver}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 

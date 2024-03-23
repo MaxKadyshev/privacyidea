@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 #  2016-04-08 Cornelius Kölbel <cornelius.koelbel@netknights.it>
 #             Avoid consecutive if-statements
 #  2015-12-12 Cornelius Kölbel <cornelius.koelbel@netknights.it>
@@ -42,7 +40,8 @@ import traceback
 
 from .log import log_with
 from ..models import (Config, db, Resolver, Realm, PRIVACYIDEA_TIMESTAMP,
-                      save_config_timestamp, Policy, EventHandler, CAConnector)
+                      save_config_timestamp, Policy, EventHandler, CAConnector,
+                      NodeName)
 from privacyidea.lib.framework import get_request_local_store, get_app_config_value, get_app_local_store
 from privacyidea.lib.utils import to_list
 from privacyidea.lib.utils.export import (register_import, register_export)
@@ -144,7 +143,8 @@ class SharedConfigClass(object):
                     for x in realm.resolver_list:
                         realmdef["resolver"].append({"priority": x.priority,
                                                      "name": x.resolver.name,
-                                                     "type": x.resolver.rtype})
+                                                     "type": x.resolver.rtype,
+                                                     "node": x.node_uuid})
                     realmconfig[realm.name] = realmdef
                 # Load all policies
                 for pol in Policy.query.all():
@@ -988,7 +988,9 @@ def get_privacyidea_node(default='localnode'):
     This returns the node name of the privacyIDEA node as found in the pi.cfg
     file in PI_NODE.
     If it does not exist, the PI_AUDIT_SERVERNAME is used.
+
     :return: the distinct node name
+    :rtype: str
     """
     node_name = get_app_config_value("PI_NODE", get_app_config_value("PI_AUDIT_SERVERNAME", default))
     return node_name
@@ -997,13 +999,16 @@ def get_privacyidea_node(default='localnode'):
 def get_privacyidea_nodes():
     """
     This returns the list of the nodes, including the own local node name
+
     :return: list of nodes
+    :rtype: list
     """
-    own_node_name = get_privacyidea_node()
-    nodes = get_app_config_value("PI_NODES", [])[:]
-    if own_node_name not in nodes:
-        nodes.append(own_node_name)
-    return nodes
+    node_names = []
+    nodes = db.session.query(NodeName).all()
+    for node in nodes:
+        node_names.append(node.name)
+
+    return node_names
 
 
 @register_export()

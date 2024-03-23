@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 This test file tests the lib.tokenclass
 
@@ -52,8 +50,7 @@ class HOTPTokenTestCase(MyTestCase):
                              "fileName": PWFILE})
         self.assertTrue(rid > 0, rid)
 
-        (added, failed) = set_realm(self.realm1,
-                                    [self.resolvername1])
+        (added, failed) = set_realm(self.realm1, [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 

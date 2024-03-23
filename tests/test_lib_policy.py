@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 This test file tests the lib.policy.py
 
@@ -120,6 +119,14 @@ class PolicyTestCase(MyTestCase):
                        adminuser=["admin", "superroot"])
         self.assertTrue(p > 0)
 
+        p = set_policy(name="pol5",
+                       action="enroll, init, disable , enable",
+                       scope="admin",
+                       realm="realm2",
+                       user_case_insensitive=True,
+                       adminuser=["Admin", "superroot"])
+        self.assertTrue(p > 0)
+
         # enable and disable policies
         policies = PolicyClass().match_policies(active=False)
         num_old = len(policies)
@@ -148,8 +155,11 @@ class PolicyTestCase(MyTestCase):
         # find policies authorization and realm2
         policies = P.match_policies(action="tokentype", scope=SCOPE.AUTHZ)
         self.assertTrue(len(policies) == 2, policies)
-        # find policies with user admin
+        # find policies with user admin and just as case-insensitive police with Admin
         policies = P.match_policies(scope="admin", adminuser="admin")
+        self.assertTrue(len(policies) == 2, "{0!s}".format(len(policies)))
+        # find policies with user Admin and no case-sensitive police with admin
+        policies = P.match_policies(scope="admin", adminuser="Admin")
         self.assertTrue(len(policies) == 1, "{0!s}".format(len(policies)))
         # find policies with resolver2 and authorization. THe result should
         # be pol2 and pol2a
@@ -167,6 +177,8 @@ class PolicyTestCase(MyTestCase):
         # have no destinct information about resolvers
         policies = P.match_policies(resolver="resolver1", scope=SCOPE.AUTHZ)
         self.assertTrue(len(policies) == 3, policies)
+
+        delete_policy(name="pol5")
 
     def test_04_delete_policy(self):
         delete_policy(name="pol4")
@@ -635,7 +647,9 @@ class PolicyTestCase(MyTestCase):
 
         # create user realm
         (added, failed) = set_realm("realm4",
-                                    ["passwd", "passwords"])
+                                    [
+                                        {'name': "passwd"},
+                                        {'name': "passwords"}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 2)
 
@@ -814,10 +828,10 @@ class PolicyTestCase(MyTestCase):
 
         # create a realm with reso1 being the resolver with the highest priority
         (added, failed) = set_realm("realm1",
-                                    ["reso1", "resoX", "resoA"],
-                                    priority={"reso1": 1,
-                                              "resoX": 2,
-                                              "resoA": 3})
+                                    [
+                                        {'name': "reso1", 'priority': 1},
+                                        {'name': "resoX", 'priority': 2},
+                                        {'name': "resoA", 'priority': 3}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 3)
 
@@ -1028,11 +1042,11 @@ class PolicyTestCase(MyTestCase):
                              "fileName": FILE_PASSWD})
         self.assertGreater(rid, 0)
 
-        (added, failed) = set_realm("realm1", ["reso1"])
+        (added, failed) = set_realm("realm1", [{'name': "reso1"}])
         self.assertEqual(len(failed), 0)
         self.assertEqual(len(added), 1)
 
-        (added, failed) = set_realm("realm2", ["reso2"])
+        (added, failed) = set_realm("realm2", [{'name': "reso2"}])
         self.assertEqual(len(failed), 0)
         self.assertEqual(len(added), 1)
 
@@ -1167,7 +1181,7 @@ class PolicyTestCase(MyTestCase):
                              "fileName": FILE_PASSWORDS})
         self.assertGreater(rid, 0)
 
-        (added, failed) = set_realm("realm1", ["reso1"])
+        (added, failed) = set_realm("realm1", [{'name': "reso1"}])
         self.assertEqual(len(failed), 0)
         self.assertEqual(len(added), 1)
 

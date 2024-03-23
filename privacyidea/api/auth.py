@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # 2020-02-15 Jean-Pierre Höhmann <jean-pierre.hoehmann@netknights.it>
 #            Add webAuthn token
 # 2018-06-15 Cornelius Kölbel <cornelius.koelbel@netknights.it>
@@ -222,7 +220,7 @@ def get_auth_token():
 
     # the realm parameter has precedence! Check if it exists
     if realm_param and not realm_is_defined(realm_param):
-        raise AuthError(_("Authentication failure. Unknown realm: {0!s}.".format(realm_param)),
+        raise AuthError(_("Authentication failure. Unknown realm: {0!s}.").format(realm_param),
                         id=ERROR.AUTHENTICATE_WRONG_CREDENTIALS)
 
     if username is None:

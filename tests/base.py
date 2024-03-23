@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import unittest
 import mock
 from sqlalchemy.orm.session import close_all_sessions
@@ -34,10 +32,13 @@ class FakeFlaskG(object):
 class FakeAudit(Audit):
 
     def __init__(self):
+        super(FakeAudit).__init__()
         self.audit_data = {}
 
 
 class MyTestCase(unittest.TestCase):
+    app = None
+    app_context = None
     resolvername1 = "resolver1"
     resolvername2 = "Resolver2"
     resolvername3 = "reso3"
@@ -66,8 +67,8 @@ class MyTestCase(unittest.TestCase):
         cls.app_context = cls.app.app_context()
         cls.app_context.push()
         db.create_all()
-        # save the current timestamp to the database to avoid hanging cached
-        # data
+
+        # save the current timestamp to the database to avoid hanging cached data
         save_config_timestamp()
         db.session.commit()
         # Create an admin for tests.
@@ -86,8 +87,7 @@ class MyTestCase(unittest.TestCase):
                              "fileName": PWFILE})
         self.assertTrue(rid > 0, rid)
 
-        (added, failed) = set_realm(self.realm1,
-                                    [self.resolvername1])
+        (added, failed) = set_realm(self.realm1, [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 
@@ -113,7 +113,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(rid > 0, rid)
 
         (added, failed) = set_realm(self.realm2,
-                                    [self.resolvername1])
+                                    [{'name': self.resolvername1}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 
@@ -139,7 +139,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(rid > 0, rid)
 
         (added, failed) = set_realm(self.realm3,
-                                    [self.resolvername3])
+                                    [{'name': self.resolvername3}])
         self.assertTrue(len(failed) == 0)
         self.assertTrue(len(added) == 1)
 
@@ -177,7 +177,7 @@ class MyTestCase(unittest.TestCase):
                       }
         r = save_resolver(parameters)
         self.assertTrue(r)
-        success, fail = set_realm(realm, ["sqlite_resolver"])
+        success, fail = set_realm(realm, [{'name': "sqlite_resolver"}])
         self.assertEqual(len(success), 1)
         self.assertEqual(len(fail), 0)
 
